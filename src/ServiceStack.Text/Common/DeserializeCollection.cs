@@ -73,7 +73,7 @@ namespace ServiceStack.Text.Common
 			if (ofCollectionType == null) return new List<T>(withItems);
 
 			var genericTypeDefinition = ofCollectionType.GetGenericTypeDefinition();
-#if !XBOX
+#if !XBOX && !WINDOWS_PHONE
 			if (genericTypeDefinition == typeof(HashSet<T>))
 				return new HashSet<T>(withItems);
 #endif

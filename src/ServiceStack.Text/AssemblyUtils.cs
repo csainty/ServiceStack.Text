@@ -15,7 +15,7 @@ namespace ServiceStack.Text
 		private const string ExeExt = "dll";
 		private const char UriSeperator = '/';
 
-#if !XBOX
+#if !XBOX && !WINDOWS_PHONE
 		/// <summary>
 		/// Find the type from the name supplied
 		/// </summary>
@@ -35,7 +35,7 @@ namespace ServiceStack.Text
 		}
 #endif
 
-#if !XBOX
+#if !XBOX && !WINDOWS_PHONE
 		/// <summary>
 		/// Find type if it exists
 		/// </summary>
@@ -85,7 +85,7 @@ namespace ServiceStack.Text
 			return Assembly.LoadFrom(assemblyPath);
 		}
 
-#if !XBOX
+#if !XBOX && !WINDOWS_PHONE
 		public static string GetAssemblyBinPath(Assembly assembly)
 		{
 			var binPathPos = assembly.CodeBase.LastIndexOf(UriSeperator);

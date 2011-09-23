@@ -19,6 +19,10 @@ using System.Globalization;
 using System.Text.RegularExpressions;
 using ServiceStack.Text.Support;
 
+#if WINDOWS_PHONE
+using System.IO.IsolatedStorage;
+#endif
+
 namespace ServiceStack.Text
 {
 	public static class StringExtensions
@@ -171,7 +175,7 @@ namespace ServiceStack.Text
 			return sb.ToString();
 		}
 
-#if !XBOX
+#if !XBOX && !WINDOWS_PHONE
 		public static string HexEscape(this string text, params char[] anyCharOf)
 		{
 			if (string.IsNullOrEmpty(text)) return text;
@@ -391,14 +395,14 @@ namespace ServiceStack.Text
 			return JsonSerializer.DeserializeFromString<T>(json);
 		}
 
-#if !XBOX
+#if !XBOX && !WINDOWS_PHONE
 		public static string ToXml<T>(this T obj)
 		{
 			return XmlSerializer.SerializeToString<T>(obj);
 		}
 #endif
 
-#if !XBOX
+#if !XBOX && !WINDOWS_PHONE
 		public static T FromXml<T>(this string json)
 		{
 			return XmlSerializer.DeserializeFromString<T>(json);
@@ -426,6 +430,12 @@ namespace ServiceStack.Text
 			using( var fileStream = new FileStream( filePath, FileMode.Open, FileAccess.Read ) )
 			{
 				return new StreamReader( fileStream ).ReadToEnd( ) ;
+			}
+#elif WINDOWS_PHONE
+			using (var isoStore = IsolatedStorageFile.GetUserStoreForApplication()) {
+				using (var fileStream = isoStore.OpenFile(filePath, FileMode.Open)) {
+					return new StreamReader(fileStream).ReadToEnd();
+				}
 			}
 #else
 			return File.ReadAllText(filePath);
