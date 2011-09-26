@@ -18,6 +18,10 @@ using System.Reflection;
 using System.Runtime.Serialization;
 using ServiceStack.Text.Support;
 
+#if WINDOWS_PHONE
+	using System.Linq.Expressions;
+#endif
+
 namespace ServiceStack.Text
 {
 	public delegate object EmptyCtorDelegate();
@@ -148,13 +152,13 @@ namespace ServiceStack.Text
 			if (!type.IsValueType) return false;
 			var underlyingType = Nullable.GetUnderlyingType(type) ?? type;
 			return underlyingType == typeof (byte)
-		       || underlyingType == typeof (sbyte)
-		       || underlyingType == typeof (short)
-		       || underlyingType == typeof (ushort)
-		       || underlyingType == typeof (int)
-		       || underlyingType == typeof (uint)
-		       || underlyingType == typeof (long)
-		       || underlyingType == typeof (ulong);
+			   || underlyingType == typeof (sbyte)
+			   || underlyingType == typeof (short)
+			   || underlyingType == typeof (ushort)
+			   || underlyingType == typeof (int)
+			   || underlyingType == typeof (uint)
+			   || underlyingType == typeof (long)
+			   || underlyingType == typeof (ulong);
 		}
 
 		public static bool IsRealNumberType(this Type type)
@@ -251,6 +255,7 @@ namespace ServiceStack.Text
 		}
 
 		static readonly Dictionary<Type, EmptyCtorDelegate> ConstructorMethods = new Dictionary<Type, EmptyCtorDelegate>();
+
 		public static EmptyCtorDelegate GetConstructorMethod(Type type)
 		{
 			lock (ConstructorMethods)
@@ -270,9 +275,10 @@ namespace ServiceStack.Text
 			var emptyCtor = type.GetConstructor(Type.EmptyTypes);
 			if (emptyCtor != null)
 			{
-
-#if MONOTOUCH || SILVERLIGHT || XBOX
+#if MONOTOUCH || (SILVERLIGHT && !WINDOWS_PHONE) || XBOX
 				return () => Activator.CreateInstance(type);
+#elif WINDOWS_PHONE
+				return Expression.Lambda<EmptyCtorDelegate>(Expression.New(type)).Compile();
 #else
 				var dm = new System.Reflection.Emit.DynamicMethod("MyCtor", type, Type.EmptyTypes, typeof(ReflectionExtensions).Module, true);
 				var ilgen = dm.GetILGenerator();
@@ -284,8 +290,10 @@ namespace ServiceStack.Text
 #endif
 			}
 
-#if SILVERLIGHT || XBOX
+#if (SILVERLIGHT && !WINDOWS_PHONE) || XBOX
 			return () => Activator.CreateInstance(type);
+#elif WINDOWS_PHONE
+			return Expression.Lambda<EmptyCtorDelegate>(Expression.New(type)).Compile();
 #else
 			//Anonymous types don't have empty constructors
 			return () => FormatterServices.GetUninitializedObject(type);
@@ -294,8 +302,8 @@ namespace ServiceStack.Text
 
 		public static object CreateInstance(Type type)
 		{
-			var ctorFn = GetConstructorMethod( type ) ;
-			return ctorFn( ) ;
+			var ctorFn = GetConstructorMethod(type);
+			return ctorFn();
 		}
 
 		public static PropertyInfo[] GetPublicProperties(this Type type)
@@ -361,7 +369,5 @@ namespace ServiceStack.Text
 		{
 			return type.GetCustomAttributes(true).Any(x => x.GetType().Name == DataContract);
 		}
-
 	}
-
 }

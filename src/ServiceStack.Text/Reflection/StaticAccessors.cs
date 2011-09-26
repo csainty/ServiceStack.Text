@@ -13,15 +13,16 @@ using System;
 using System.Reflection;
 
 #if !XBOX
-using System.Linq.Expressions ;
+using System.Linq.Expressions;
 #endif
+
 namespace ServiceStack.Text.Reflection
 {
 	public static class StaticAccessors
 	{
 		public static Func<object, object> GetValueGetter(this PropertyInfo propertyInfo, Type type)
 		{
-#if SILVERLIGHT || MONOTOUCH || XBOX
+#if (SILVERLIGHT && !WINDOWS_PHONE) || MONOTOUCH || XBOX
 			var getMethodInfo = propertyInfo.GetGetMethod();
 			if (getMethodInfo == null) return null;
 			return x => getMethodInfo.Invoke(x, new object[0]);
@@ -37,7 +38,7 @@ namespace ServiceStack.Text.Reflection
 
 		public static Func<T, object> GetValueGetter<T>(this PropertyInfo propertyInfo)
 		{
-#if SILVERLIGHT || MONOTOUCH || XBOX
+#if (SILVERLIGHT && !WINDOWS_PHONE) || MONOTOUCH || XBOX
 			var getMethodInfo = propertyInfo.GetGetMethod();
 			if (getMethodInfo == null) return null;
 			return x => getMethodInfo.Invoke(x, new object[0]);
@@ -73,4 +74,3 @@ namespace ServiceStack.Text.Reflection
 
 	}
 }
-

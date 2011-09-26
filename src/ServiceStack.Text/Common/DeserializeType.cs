@@ -11,7 +11,7 @@
 //
 
 #if !XBOX
-using System.Linq.Expressions ;
+using System.Linq.Expressions;
 #endif
 
 using System;
@@ -37,7 +37,6 @@ namespace ServiceStack.Text.Common
 				return value => emptyCtorFn();
 			}
 
-
 			var setterMap = new Dictionary<string, SetPropertyDelegate>();
 			var map = new Dictionary<string, ParseStringDelegate>();
 
@@ -51,8 +50,8 @@ namespace ServiceStack.Text.Common
 			return value => StringToType(type, value, ctorFn, setterMap, map);
 		}
 
-		private static object StringToType(Type type, string strType, 
-           EmptyCtorDelegate ctorFn,
+		private static object StringToType(Type type, string strType,
+		   EmptyCtorDelegate ctorFn,
 		   IDictionary<string, SetPropertyDelegate> setterMap,
 		   IDictionary<string, ParseStringDelegate> parseStringFnMap)
 		{
@@ -62,7 +61,6 @@ namespace ServiceStack.Text.Common
 				throw new SerializationException(string.Format(
 					"Type definitions should start with a '{0}', expecting serialized type '{1}', got string starting with: {2}",
 					JsWriter.MapStartChar, type.Name, strType.Substring(0, strType.Length < 50 ? strType.Length : 50)));
-
 
 			var instance = ctorFn();
 			string propertyName;
@@ -104,9 +102,9 @@ namespace ServiceStack.Text.Common
 		{
 			var setMethodInfo = propertyInfo.GetSetMethod(true);
 			if (setMethodInfo == null) return null;
-			
-#if SILVERLIGHT || MONOTOUCH || XBOX
-			return (instance, value) => setMethodInfo.Invoke(instance, new[] {value});
+
+#if (SILVERLIGHT && !WINDOWS_PHONE) || MONOTOUCH || XBOX
+			return (instance, value) => setMethodInfo.Invoke(instance, new[] { value });
 #else
 			var oInstanceParam = Expression.Parameter(typeof(object), "oInstanceParam");
 			var oValueParam = Expression.Parameter(typeof(object), "oValueParam");
@@ -125,7 +123,7 @@ namespace ServiceStack.Text.Common
 				).Compile();
 
 			return propertySetFn;
-#endif			
+#endif
 		}
 	}
 }
